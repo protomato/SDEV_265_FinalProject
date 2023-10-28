@@ -421,4 +421,4 @@ def play():
 		pygame.init()
 		root.mainloop()
 
-play()
+#play()

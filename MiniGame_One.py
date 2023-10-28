@@ -104,7 +104,8 @@ class MiniGame_One:
 			self.clock.tick(500)
 
 		pygame.quit()
-
+'''
 if __name__ == "__main__":
 	Mini = MiniGame_One()
 	Mini.Play_Mini()
+'''
