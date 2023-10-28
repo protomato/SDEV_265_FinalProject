@@ -4,6 +4,7 @@ import random
 from pygame.locals import Rect
 import math
 from Timer import Timer  # Import Timer class from Timer module
+import sys
 
 # Initialize the game engine
 pygame.init()
@@ -61,7 +62,8 @@ class MiniGame_One:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					done = True
-
+					pygame.quit()
+					sys.exit()
 			self.screen.fill(BLACK)
 	
 			if timer.run_timer():

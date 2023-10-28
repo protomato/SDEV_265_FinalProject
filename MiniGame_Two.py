@@ -1,6 +1,7 @@
 import pygame
 import random
 from Timer import Timer
+import sys
 
 pygame.init()
 
@@ -45,7 +46,8 @@ class MiniGame_Two:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					self.done = True
-
+					pygame.quit()	
+					sys.exit()
 			self.screen.fill(BLACK)
 
 			rect = pygame.draw.rect(self.screen, WHITE, [self.rect2_x, self.rect2_y, 50, 50])
