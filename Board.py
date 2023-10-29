@@ -5,6 +5,10 @@ from MiniGame_Two import MiniGame_Two
 from Player import *
 import random
 
+
+pos = 0
+boardsize=24
+qsize=6
 # Constants for window size and grid setup
 ROWS,COLS = 7,7 #delimite how many squares you want to have
 WIDTH, HEIGHT = 100,100
@@ -123,12 +127,13 @@ class ButtonMove(Button):
 		return self.button_End 
 
 	def on_button_click(self):
-		pos = 0
-		boardsize=24
-		qsize=6
+		#pos = 0
+		#boardsize=24
+		#qsize=6
 		roll=random.randrange(1,6)
 		#roll=1   
-		#global pos, boardsize, qsize # Add player_positions to the list of global variables
+		global pos, boardsize, qsize # Add player_positions to the list of global variables
+		
 		pos=(pos+roll)%boardsize
 		#print(pos)
 		fliped=(pos>=(qsize*2))
@@ -147,38 +152,38 @@ class ButtonMove(Button):
 			si=qsize
 		if fliped:
 			if board.get_current_player_index()==1:
-				self.player_positions[0] = [(si,fi)]  #player_One position update
+				self.player_positions[0] = (si,fi)  #player_One position update
 				board.move_player(si,fi,1)
 			elif board.get_current_player_index()==2:
-				self.player_positions[1] = [(si,fi)]  #player_two position update
+				board.player_positions[1] = (si,fi)  #player_two position update
 				board.move_player(si,fi,2)
 			elif board.get_current_player_index()==3:
-				self.player_positions[2] = [(si,fi)]  #player_three position update
+				board.player_positions[2] = (si,fi)  #player_three position update
 				board.move_player(si,fi,3)
 			else:
-				self.player_positions[3] = [(si,fi)]  #player_four position update
+				self.player_positions[3] = (si,fi)  #player_four position update
 				board.move_player(si,fi,4)
 		else:
 			if board.get_current_player_index()==1:
-				self.player_positions[0] = [(fi,si)]  #player_One position update
+				board.player_positions[0] = (fi,si)  #player_One position update
 				board.move_player(fi,si,1)
 			elif board.get_current_player_index()==2:
-				self.player_positions[1] = [(fi,si)]  #player_two position update
+				board.player_positions[1] = (fi,si)  #player_two position update
 				board.move_player(fi,si,2)
 			elif board.get_current_player_index()==3:
-				self.player_positions[2] = [(fi,si)]  #player_three position update
+				board.player_positions[2] = (fi,si)  #player_three position update
 				board.move_player(fi,si,3)
 			else:
-				self.player_positions[3] = [(fi,si)]  #player_four position update
+				board.player_positions[3] = (fi,si)  #player_four position update
 				board.move_player(fi,si,4)
-				#print(self.player_positions)
+			
+		#print(self.player_positions)
 
 class Board:
 	def __init__(self,root):
 		self.root=root
 		# list containing multiple tuples each tuple represent the position of the player on the board
 		self.player_positions = [(0, 0), (0, 6), (6, 6), (6, 0)] 
-		
 		self.image_path = "images\playerOne.png"
 		self.original_image = Image.open(self.image_path)
 		self.resized_image = self.original_image.resize((SQUARE_SIZE-50, SQUARE_SIZE-50))
@@ -200,7 +205,7 @@ class Board:
 		self.image_Four = ImageTk.PhotoImage(self.resized_image_Four)
 		
 		self.board = [] # Initialize an empty list to represent the game board.
-		self.player_positions = self.player_positions 	
+		#self.player_positions = player_positions 	
 		self.red_left = self.white_left = 12 
 		self.squares = [[None for _ in range(COLS)] for _ in range(ROWS)]
 		self.create_board(0,0)
@@ -240,7 +245,7 @@ class Board:
 
 	def getPlayButton(self):
 		return self.buttonPlay
-		
+	'''	
 	def on_key_press(self, event):
 		x_coordinate = self.player_positions[0][1]
 		y_coordinate = self.player_positions[0][0]
@@ -261,7 +266,7 @@ class Board:
 		self.buttonPlay.notMove(y_coordinate,x_coordinate)
 		self.player_row = x_coordinate
 		self.player_col = y_coordinate
-	
+	'''
 			
 	def getPlayerColorTwo(self):
 		return self.image_Two
@@ -306,8 +311,6 @@ class Board:
 		
 	def move_player(self,new_row,new_col,player):
 		if not self.notMove and player==1:
-			self.player_row_One += new_row
-			self.player_col_One += new_col  # Adjust the column position based on the random number
 			if 0 <= new_row < ROWS and 0 <= new_col < COLS:				
 				self.player_row_One = new_row
 				self.player_col_One = new_col
@@ -423,5 +426,3 @@ def play():
 	root.winfo_toplevel().positionfrom("user")
 	root.mainloop()	
 	return board
-
-
