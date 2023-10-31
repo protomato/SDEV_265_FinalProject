@@ -111,7 +111,7 @@ class PlayButton(Button):
 			self.button_move.grid_remove()
 			self.grid_remove()
 			self.button_move.getEndButton().grid(row=ROWS//2, column=COLS//2)
-			board.swap_current_four_players()
+			board.swap_current_four_players()############################################################
 			
 	def MiniGame_One(self):	
 		#check if the player won or lost the mini-game
@@ -137,7 +137,7 @@ class ButtonMove(Button):
 		self.player_positions = player_positions
 		self.endTurn = endTurn
 		self.button_End = EndTurnButton(root,player_positions,self)
-		self.pos = 0
+		self.pos=0
 		self.boardsize=24
 		self.qsize=6
 		self.roll_num=0
@@ -145,13 +145,16 @@ class ButtonMove(Button):
 	def getEndButton(self):
 		return self.button_End 
 
+	
+	
 	def on_button_click(self):
 		roll=random.randrange(1,6)
 		#roll=1   
 		#global pos, boardsize, qsize # Add player_positions to the list of global variables
 		
 		self.pos=(self.pos+roll)%self.boardsize
-		#print(pos)
+		#self.pos=self.roll(roll)
+		#print(self.pos)
 		fliped=(self.pos>=(self.qsize*2))
 		temp=self.pos%(self.qsize*2)
 		if fliped:
@@ -497,6 +500,8 @@ class Board:
 		self.current_player_index=1
 		self.buttonPlay= PlayButton(root,self.player_positions)
 		self.labelWin.grid_remove()
+		self.label.grid_remove()
+		self.labelTwo.grid_remove()
 
 root = Tk()
 board = Board(root)	
