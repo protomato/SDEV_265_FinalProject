@@ -1,18 +1,9 @@
-from tkinter import Tk, Canvas, Frame, Button
+from tkinter import Tk, Canvas, Frame, Label ,Button
 from PIL import Image, ImageTk
-import pygame
-import random
 from MiniGame_One import MiniGame_One 
 from MiniGame_Two import MiniGame_Two 
-
-#newstuff
-pos=0
-boardsize=24
-qsize=6
-
-pygame.init()
-root = Tk()
-root.title("Board")
+from Player import *
+import random
 
 # Constants for window size and grid setup
 ROWS,COLS = 7,7 #delimite how many squares you want to have
@@ -20,27 +11,9 @@ WIDTH, HEIGHT = 100,100
 #size = (WIDTH,HEIGHT)
 SQUARE_SIZE = 100  # the size of the square is width divided by number of rows 
 
+SIZE=800,800
 SQUARE_SIZE_X = WIDTH // COLS 
 SQUARE_SIZE_Y = WIDTH // COLS 
-
-# Image path and positions for player pieces
-
-image_path_Two = "images\playerTwo.png"
-original_image_Two = Image.open(image_path_Two)
-resized_image2 = original_image_Two.resize((SQUARE_SIZE-50, SQUARE_SIZE-50))		   
-image_Two = ImageTk.PhotoImage(resized_image2)
-
-image_path_Three = "images\playerThree.png"
-original_image_Three = Image.open(image_path_Three)
-resized_image_Three = original_image_Three.resize((SQUARE_SIZE-50, SQUARE_SIZE-50))		   
-image_Three = ImageTk.PhotoImage(resized_image_Three)
-
-image_path_Four = "images\playerFour.png"
-original_image_Four = Image.open(image_path_Four)
-resized_image_Four = original_image_Four.resize((SQUARE_SIZE-50, SQUARE_SIZE-50))		   
-image_Four = ImageTk.PhotoImage(resized_image_Four)
-
-player_positions = [(0, 0), (0, 6), (6, 6), (6, 0)] # list containing multiple tuples each tuple represent the position of the player on the board
 
 # Define color constants
 RED = (255,0,0)
@@ -48,27 +21,46 @@ WHITE = (255,255,255)
 BLACK = (0,0,0)
 BLUE = (0,0,255)
 
+
+
+class ButtonWon(Button):
+	def __init__(self,root):
+		super().__init__(root,text="Reset Game",command=self.on_button_click,width=10,height=3)
+
+	def on_button_click(self):
+		board.buttonPlay.getButtonMove().getEndButton().grid_remove()
+		board.buttonPlay.grid_remove()
+		board.buttonPlay.getButtonMove().grid_remove()
+		board.reset_game()
+
 class EndTurnButton(Button):
 	def __init__(self,root,player_positions,my_button_move):
 		super().__init__(root,text="End Turn ",command=self.on_button_click,width=10,height=3)
 		self.player_positions=player_positions
 		self.my_button_move=my_button_move
-
+		
 	def on_button_click(self):
 		self.grid_remove()
 		self.my_button_move.grid(row=ROWS // 2, column=COLS // 2)
+		board.labelPlayer(board.get_current_player_index())	
 		
 class PlayButton(Button):
 	def __init__(self, root,player_positions):
 		# Call the constructor of the base class (Button)
 		super().__init__(root, text="Play ", command=self.on_button_click,width=10,height=3)
 		self.gameWon = False
-		self.button_move = MyButtonMove(root,player_positions,False,text="Move")
-		self.button_move.grid(row=ROWS//2, column=COLS//2)
+		self.button_move = ButtonMove(root,player_positions,False,text="Move")
+		self.buttonMove=self.button_move.grid(row=ROWS//2, column=COLS//2)
 		self.player_positions=player_positions
 		self.endTurn = False
 		self.row=0
 		self.col=0
+
+	def getButtonMove(self):
+		return 	self.button_move
+
+	def getEndButton(self):
+		return self.button_move.getEndButton()
 
 	def notMove(self,row,colum):
 		self.row=row
@@ -91,6 +83,7 @@ class PlayButton(Button):
 			self.button_move.grid_remove()
 
 	def on_button_click(self):
+		
 		if self.row == 0 and self.col == 1:
 			self.MiniGame_One()
 		if self.row == 0 and self.col == 2:
@@ -99,6 +92,7 @@ class PlayButton(Button):
 			self.MiniGame_One()
 		if self.row == 0 and self.col == 4:
 			self.MiniGame_One()
+	
 		if self.row == 6 and self.col == 1 :
 			self.MiniGame_Two()
 		if self.row == 6 and self.col == 2 :
@@ -107,7 +101,8 @@ class PlayButton(Button):
 			self.MiniGame_Two()
 		if self.row == 6 and self.col == 4 :
 			self.MiniGame_Two()
-	
+		
+
 	def MiniGame_Two(self):
 		game_Two = MiniGame_Two()
 		game_Two.Play_Mini()
@@ -118,8 +113,8 @@ class PlayButton(Button):
 			self.button_move.grid_remove()
 			self.grid_remove()
 			self.button_move.getEndButton().grid(row=ROWS//2, column=COLS//2)
-			board.swap_current_four_players()
-
+			board.swap_current_four_players()############################################################
+			
 	def MiniGame_One(self):	
 		#check if the player won or lost the mini-game
 		game_one = MiniGame_One()	
@@ -132,80 +127,172 @@ class PlayButton(Button):
 			self.grid_remove()
 			self.button_move.getEndButton().grid(row=ROWS//2, column=COLS//2)
 			board.swap_current_four_players()
-			print("current player "+str(board.get_current_player_index()))
+			#print("current player "+str(board.get_current_player_index()))
 
 	def getendTurn(self):
 		return self.endTurn
 
-class MyButtonMove(Button):
+class ButtonMove(Button):
 	def __init__(self, root,player_positions,endTurn,text="Play "):
 		# Call the constructor of the base class (Button)
 		super().__init__(root, text=text, command=self.on_button_click,width=10,height=3)
 		self.player_positions = player_positions
 		self.endTurn = endTurn
-		#self.button_move = MyButtonMove(root,player_positions,False,text="Move")
 		self.button_End = EndTurnButton(root,player_positions,self)
+		self.pos=0
+		self.boardsize=24
+		self.qsize=6
+		self.roll_num=0
+		self.MoveF = False
+		self.tempList = 0
+		self.flipedOne = 0
+		self.flipedTwo = 0
+		self.flipedThree = 0
+		self.flipedFour = 0
+
+	def rollDice(self):
+	
+		roll=random.randint(0,6)
+		
+		while roll<=self.tempList:
+			roll=random.randint(0,6)
+			if roll==6:
+				break
+			print("roll "+str(roll))
+		if roll==6 :
+			if board.current_player_index == 1:	
+				self.flipedOne +=1 
+			if board.current_player_index == 2:	
+				self.flipedTwo +=1 
+			if board.current_player_index == 3:	
+				self.flipedThree +=1 
+			if board.current_player_index == 4:	
+				self.flipedFour +=1 
+		
+		if board.current_player_index == 1:	
+			self.player_positions[0] = (self.boardList(roll,self.flipedOne))
+			row,col =self.boardList(roll,self.flipedOne)
+			board.move_player(row,col,1)
+		if board.current_player_index == 2:	
+			self.player_positions[1] = (self.boardList(roll,self.flipedTwo))
+			row,col=self.boardList(roll,self.flipedTwo)
+			board.move_player(row,col,2)
+		if board.current_player_index == 3:	
+			self.boardList() 
+		if board.current_player_index == 4:	
+			self.boardList()
+		if roll == 6:
+			self.tempList = 0
+			
+	def boardList(self,roll,fliped):
+		left_right_up = [[0,0],[0,1], [0,2], [0,3], [0,4], [0,5], [0,6]]
+		down_top_right = [ [6,0], [5,0], [4,0], [3,0],[2,0],[1,0],[0,0] ]
+		right_left_down = [[6,6], [6,5], [6,4], [6,3], [6,2], [6,1],[6,0]]
+		top_dow_right = [[0,6],[1,6], [2,6], [3,6], [4,6], [5,6], [6,6]]
+
+		if fliped == 0 :	  
+			self.tempList = left_right_up[roll][1]
+			return left_right_up[roll][0],self.tempList
+		elif fliped == 1:
+			self.tempList = down_top_right[roll][0]
+			
+			return self.tempList,down_top_right[roll][1]
+		elif fliped == 3:
+			self.tempList = right_left_down[roll][1]
+		
+			return right_left_down[roll][0],self.tempList
+		elif fliped == 4:
+			self.tempList = top_dow_right[roll][0]
+			
+			fliped == 0
+			return self.tempList,top_dow_right[roll][1]
+		
+		print("roll "+str(roll))
+		print("temp "+str(self.tempList))
+		print(left_right_up[roll])
+		print(left_right_up[roll][1])
+		
 
 	def getEndButton(self):
 		return self.button_End 
 
 	def on_button_click(self):
+		self.rollDice()
+
+	'''
+	def on_button_click(self):
 		roll=random.randrange(1,6)
 		#roll=1   
-		global pos, boardsize, qsize # Add player_positions to the list of global variables
-		pos=(pos+roll)%boardsize
-		print(pos)
-		fliped=(pos>=(qsize*2))
-		temp=pos%(qsize*2)
+		#global pos, boardsize, qsize # Add player_positions to the list of global variables
+		self.pos=(self.pos+roll)%self.boardsize
+		#self.pos=self.roll(roll)
+		#print(self.pos)
+		fliped=(self.pos>=(self.qsize*2))
+		temp=self.pos%(self.qsize*2)
 		if fliped:
-			temp=(qsize*2)-temp
+			temp=(self.qsize*2)-temp
 		fi,si=0,0
-		if temp < qsize:
+		if temp < self.qsize:
 			fi=0
-			si=temp%qsize
-		elif temp == qsize*2:
-			fi=qsize
-			si=qsize
+			si=temp%self.qsize
+		elif temp == self.qsize*2:
+			fi=self.qsize
+			si=self.qsize
 		else:
-			fi=temp%qsize
-			si=qsize
+			fi=temp%self.qsize
+			si=self.qsize
 		if fliped:
 			if board.get_current_player_index()==1:
-				self.player_positions[0] = [(si,fi)]  #player_One position update
+				self.player_positions[0] = (si,fi)  #player_One position update
 				board.move_player(si,fi,1)
 			elif board.get_current_player_index()==2:
-				self.player_positions[1] = [(si,fi)]  #player_two position update
+				board.player_positions[1] = (si,fi)  #player_two position update
 				board.move_player(si,fi,2)
 			elif board.get_current_player_index()==3:
-				self.player_positions[2] = [(si,fi)]  #player_three position update
+				board.player_positions[2] = (si,fi)  #player_three position update
 				board.move_player(si,fi,3)
 			else:
-				self.player_positions[3] = [(si,fi)]  #player_four position update
+				self.player_positions[3] = (si,fi)  #player_four position update
 				board.move_player(si,fi,4)
+			self.roll_num=fi
 		else:
 			if board.get_current_player_index()==1:
-				self.player_positions[0] = [(fi,si)]  #player_One position update
+				board.player_positions[0] = (fi,si)  #player_One position update
 				board.move_player(fi,si,1)
 			elif board.get_current_player_index()==2:
-				self.player_positions[1] = [(fi,si)]  #player_two position update
+				board.player_positions[1] = (fi,si)  #player_two position update
 				board.move_player(fi,si,2)
 			elif board.get_current_player_index()==3:
-				self.player_positions[2] = [(fi,si)]  #player_three position update
+				board.player_positions[2] = (fi,si)  #player_three position update
 				board.move_player(fi,si,3)
 			else:
-				self.player_positions[3] = [(fi,si)]  #player_four position update
+				board.player_positions[3] = (fi,si)  #player_four position update
 				board.move_player(fi,si,4)
-				print(self.player_positions)
-
+			self.roll_num=si
+		#labelRoll=Label(root, text="You roll "+str(self.roll_num), bg="#D3D3D3",padx=10, pady=10)
+		#labelRoll.grid(row=(ROWS//2)+1, column=COLS//2) 
+		#print(self.player_positions)
+		#print(roll)
+		'''
 class Board:
-	def __init__(self,player_positions):
+	def __init__(self,root):
+		self.root=root
+		# list containing multiple tuples each tuple represent the position of the player on the board
+		self.player_positions = [(0, 0), (0, 6), (6, 6), (6, 0)] 
 		self.image_path = "images\playerOne.png"
-		self.original_image = Image.open(self.image_path)
-		self.resized_image = self.original_image.resize((SQUARE_SIZE-50, SQUARE_SIZE-50))
-		self.image = ImageTk.PhotoImage(self.resized_image)
+		self.image=self.resizeImage(self.image_path)
+	
+		self.image_path_Two = "images\playerTwo.png"
+		self.image_Two=self.resizeImage(self.image_path_Two)
+		
+		self.image_path_Three = "images\playerThree.png"
+		self.image_Three = self.resizeImage(self.image_path_Three)
+		
+		self.image_path_Four = "images\playerFour.png"
+		self.image_Four =self.resizeImage(self.image_path_Four)
+		
 		self.board = [] # Initialize an empty list to represent the game board.
-		self.player_positions = player_positions 	
-		self.red_left = self.white_left = 12 
+		#self.red_left = self.white_left = 12 
 		self.squares = [[None for _ in range(COLS)] for _ in range(ROWS)]
 		self.create_board(0,0)
 		self.draw_squares()
@@ -216,18 +303,38 @@ class Board:
 		self.player_row_Four, self.player_col_Four = 6, 0
 		root.bind("<Key>", self.on_key_press)
 		self.gameWon = False
-		self.buttonPlay=PlayButton(root,self.player_positions)
-		self.current_player_index = 1
+
+		self.buttonPlay= PlayButton(root,self.player_positions)
+		self.current_player_index = 1  #change to one later
+		self.label = Label(root, text="Turn Player 1", bg="#D3D3D3",padx=10, pady=10)
+		self.labelTwo = Label(root, text="Blue", bg="#D3D3D3",padx=10, pady=10)
+		self.labelWin = Label(root, text="You Have Won ", bg="#D3D3D3",padx=10, pady=10)
+		self.labelPlayer(self.current_player_index)
+		
+		
+
+	def getTem(self):
+		return self.tempList
+
+	def getLabelWon(self):
+		return self.labelWin
+
+	def getWonGame(self):
+		return self.gameWon
+
+	def getPlayerPosOne(self):
+		return self.player_row_One,self.player_col_One
+
+	def resizeImage(self,image_path):
+		original_image = Image.open(image_path)
+		resized_image = original_image.resize((SQUARE_SIZE-50, SQUARE_SIZE-50))
+		return ImageTk.PhotoImage(resized_image)
 
 	def get_current_player_index(self):
 		return self.current_player_index
 
-	def swap_current_player(self):
-		# Toggle the current player's index (0 to 1, 1 to 0)
-		self.current_player_index = 2 if self.current_player_index == 1 else 1
-
 	def swap_current_four_players(self):
-		if self.current_player_index == 4:
+		if  self.current_player_index == 4:
 			self.current_player_index = 4 if self.current_player_index == 1 else 1
 		elif self.current_player_index == 3:
 			self.current_player_index = 3 if self.current_player_index == 4 else 4
@@ -237,30 +344,70 @@ class Board:
 			self.current_player_index = 1 if self.current_player_index == 2 else 2
 		else :
 			print ("Not a player")
+		return self.current_player_index
 
 	def getPlayButton(self):
 		return self.buttonPlay
-
-	def on_key_press(self, event):
-		x_coordinate = self.player_positions[0][1]
-		y_coordinate = self.player_positions[0][0]
-
-		if len(self.player_positions) >= 2:
-			x_coordinate_Player2 = self.player_positions[1][0]
-			y_coordinate_Player2 = self.player_positions[1][1]
-
-		if event.keysym == "d":
-			x_coordinate += 1
-		if event.keysym == "a":
-			x_coordinate -= 1
-
-	# Create a new tuple with the updated coordinates
-		self.player_positions = ((y_coordinate, x_coordinate))
-		board.move_player(y_coordinate, x_coordinate)
-		self.buttonPlay.notMove(y_coordinate,x_coordinate)
-		self.player_row = x_coordinate
-		self.player_col = y_coordinate
 	
+	#here
+	def on_key_press(self, event):
+		
+		if self.current_player_index == 1:
+			if event.keysym == "a":
+				self.move_player(self.player_row_One, self.player_col_One-1, 1)
+			elif event.keysym == "d":
+				self.move_player(self.player_row_One, self.player_col_One+1, 1)
+	
+		if self.current_player_index == 1:
+			if event.keysym == "s" or event.keysym == "S":
+				self.move_player(self.player_row_One+1, self.player_col_One, 1)
+			elif event.keysym == "w":				
+				self.move_player(self.player_row_One-1, self.player_col_One, 1)
+
+		if self.current_player_index == 2:
+			if event.keysym == "s":
+				self.player_row_Two += 1
+				self.move_player(self.player_row_Two, self.player_col_Two, 2)
+			elif event.keysym == "w":
+				self.player_row_Two -= 1
+				self.move_player(self.player_row_Two, self.player_col_Two, 2)
+			if event.keysym == "a":
+				self.move_player(self.player_row_Two, self.player_col_Two-1, 2)
+			elif event.keysym == "d":
+				self.move_player(self.player_row_Two, self.player_col_Two+1, 2)
+
+		if self.current_player_index == 3:
+			if event.keysym == "d":
+				self.player_col_Three += 1
+				self.move_player(self.player_row_Three, self.player_col_Three, 3)
+			elif event.keysym == "a" or event.keysym == "A":
+				self.player_col_Three -= 1
+				self.move_player(self.player_row_Three, self.player_col_Three, 3)
+			if event.keysym == "s" or event.keysym == "S":
+				self.move_player(self.player_row_Three+1, self.player_col_Three, 3)
+			elif event.keysym == "w" or event.keysym == "W":
+				self.move_player(self.player_row_Three-1, self.player_col_Three, 3)
+
+		if self.current_player_index == 4:
+			if event.keysym == "s":
+				self.move_player(self.player_row_Four+1, self.player_col_Four, 4)
+			elif event.keysym == "w":
+				self.move_player(self.player_row_Four-1, self.player_col_Four, 4)
+		if self.current_player_index == 4:
+			if event.keysym == "d":
+				self.move_player(self.player_row_Four, self.player_col_Four+1, 4)
+			elif event.keysym == "a":
+				self.move_player(self.player_row_Four, self.player_col_Four-1, 4)
+
+	#here		
+	def getPlayerColorTwo(self):
+		return self.image_Two
+
+	def getPlayerColorThree(self):
+		return self.image_Three
+	
+	def getPlayerColorFour(self):
+		return self.image_Four
 
 	def draw_squares(self):
 		for rows in range(ROWS):
@@ -275,8 +422,13 @@ class Board:
 				rect = Canvas(root, width=SQUARE_SIZE, height=SQUARE_SIZE, bg=colorBg)
 				rect.grid(row=rows, column=col)
 				self.squares[rows][col]=rect
+				rectPlayerOne =self.squares[0][0]
+				rectPlayerOne.config(bg="blue")
 				frame = Frame(root, bg="yellow", width=100, height=100)
 				frame.grid(row=ROWS//2, column=COLS//2)
+		self.squares[0][6].config(bg="green")
+		self.squares[6][6].config(bg="#FFA07A")
+		self.squares[6][0].config(bg="yellow")
 		self.draw()
 	
 	def create_board(self,row,col):
@@ -284,18 +436,15 @@ class Board:
 			self.board.append([])
 			for col in range(COLS):
 				if (row, col) in self.player_positions:
-					#print(str(row)+" "+str(col))
-					self.board[row].append(Player(row, col,self.image))
-					self.board[row].append(Player(row, col,image_Two))
-					self.board[row].append(Player(row, col,image_Three))
-					self.board[row].append(Player(row, col,image_Four))
+					self.board[row].append(Player(row, col,self.image,self))
+					self.board[row].append(Player(row, col,self.image_Two,self))
+					self.board[row].append(Player(row, col,self.image_Three,self))
+					self.board[row].append(Player(row, col,self.image_Four,self))
 				else:
 					self.board[row].append(0)
 		
 	def move_player(self,new_row,new_col,player):
 		if not self.notMove and player==1:
-			self.player_row_One += new_row
-			self.player_col_One += new_col  # Adjust the column position based on the random number
 			if 0 <= new_row < ROWS and 0 <= new_col < COLS:				
 				self.player_row_One = new_row
 				self.player_col_One = new_col
@@ -332,38 +481,68 @@ class Board:
 
 	def redraw_board(self):
 		# Redraw the board with updated player position
+			
 		for row in range(ROWS):
 			for col in range(COLS):
-				if  col == 0 or (row < 1) or col == COLS-1 or row>ROWS-2:
-					if col in range (row%2==0,COLS,2): 
-						colorBg="red"
-					else:
-						colorBg="black"
-				else:
-					colorBg="white"
 				rect = self.squares[row][col]
-				rect.config(bg=colorBg)
 				rect.delete("all")
+						
 				#player 1
 				canvas_widget=self.squares[self.player_row_One][self.player_col_One]#control movement player one
 				canvas_widget.create_image(50, 50, anchor="nw", image=self.image)
-				
+	
 				#player 2
 				rect = self.squares[0][6]
 				canvas_widget=self.squares[self.player_row_Two][self.player_col_Two]    #control movement player 2
-				canvas_widget.create_image(0, 50, anchor="nw", image=image_Two)
-				
+				canvas_widget.create_image(0, 50, anchor="nw", image=self.image_Two)
+
 				#player 3
 				rect = self.squares[row][col]
 				rect = self.squares[6][6]
 				canvas_widget=self.squares[self.player_row_Three][self.player_col_Three]    #control movement player 3
-				canvas_widget.create_image(0, 0, anchor="nw", image=image_Three)
+				canvas_widget.create_image(0, 0, anchor="nw", image=self.image_Three)
 	
 				#player 4
 				rect = self.squares[row][col]
 				rect = self.squares[6][0]
 				canvas_widget=self.squares[self.player_row_Four][self.player_col_Four]    #control movement player 4
-				canvas_widget.create_image(50, 0, anchor="nw", image=image_Four)
+				canvas_widget.create_image(50, 0, anchor="nw", image=self.image_Four)
+				self.WonGame()
+				
+	def ButtonWonOnBoard(self):
+		self.labelWin.grid(row=(ROWS//2)-1, column=COLS//2,columnspan=2,sticky='nw')
+		Game_Won = ButtonWon(root)
+		Game_Won.grid(row=ROWS//2,column=COLS//2)
+				
+	def WonGame(self):
+				
+		if self.current_player_index==1 and self.player_row_One == 0 and self.player_col_One == 0:
+			self.ButtonWonOnBoard()		
+		if self.current_player_index==2 and self.player_row_Two == 0 and self.player_col_Two == 6:
+			self.ButtonWonOnBoard()	
+		if self.current_player_index==3 and self.player_row_Three == 6 and self.player_col_Three == 6:
+			self.ButtonWonOnBoard()
+		if self.current_player_index==4 and self.player_row_Four == 6 and self.player_col_Four == 0:
+			self.ButtonWonOnBoard()
+	
+	def labelPlayer(self,currentPlayer):
+			if currentPlayer==1:
+				self.label.grid(row=1, column=1,columnspan=2,sticky='nw')
+				self.labelTwo.grid(row=1, column=1,columnspan=2,sticky='sw')
+				self.labelTwo.config(text="Blue")
+			elif currentPlayer==2:
+				self.label.grid(row=1, column=5,columnspan=2,sticky='nw')
+				self.labelTwo.grid(row=1, column=5,columnspan=2,sticky='sw')
+				self.labelTwo.config(text="Green")
+			elif currentPlayer==3:
+				self.label.grid(row=5, column=5,columnspan=2,sticky='nw')
+				self.labelTwo.grid(row=5, column=5,columnspan=2,sticky='sw')
+				self.labelTwo.config(text="Red")
+			elif currentPlayer==4:
+				self.label.grid(row=5, column=1,columnspan=2,sticky='nw')
+				self.labelTwo.grid(row=5, column=1,columnspan=2,sticky='sw')
+				self.labelTwo.config(text="Yellow")
+			self.label.config(text="Turn Player "+str(self.current_player_index))
 
 	def draw(self):
 		for self.player_row in range(ROWS):
@@ -383,42 +562,31 @@ class Board:
 		self.buttonPlay.notMove(x_coordinate,y_coordinate)
 		self.buttonPlay.grid(row=ROWS//2, column=COLS//2,columnspan=1)
 
-class Player:
-	def __init__(self,row,col,image):			   
-		self.image = image
-		self.row = row
-		self.col = col
-		
-		#function position 
-	def position(self):
-		self.x =self.col   # x position 
-		self.y =self.row   #y position
-		
+	def reset_game(self):
+		# Reset player positions to their initial state
+		self.player_positions = [(0, 0), (0, 6), (6, 6), (6, 0)]
+		self.player_row_One, self.player_col_One = 0, 0
+		self.player_row_Two, self.player_col_Two = 0, 6
+		self.player_row_Three, self.player_col_Three = 6, 6
+		self.player_row_Four, self.player_col_Four = 6, 0
+		# Reset any game flags or variables
+		self.gameWon = False  # Assuming gameWon is a flag to determine if the game is won
+		# Redraw the board with initial player positions
+		self.getLabelWon().grid_remove()
+		self.redraw_board()
+		self.buttonPlay.getEndButton().grid_remove()
+		self.buttonPlay.grid_remove()
+		self.current_player_index=1
+		self.buttonPlay= PlayButton(root,self.player_positions)
+		self.labelWin.grid_remove()
+		self.label.grid_remove()
+		self.labelTwo.grid_remove()
 
-	def draw(self,rect,player):  #load the image on the board on the giving position by the function position
-		if player==1:
-			rect.create_image(50, 50, anchor="nw", image=self.image)
-		if player==2:
-			rect.create_image(0, 50, anchor="nw", image=image_Two)
-		if player==3:
-			rect.create_image(0, 0, anchor="nw", image=image_Three)
-		if player==4:
-			rect.create_image(50, 0, anchor="nw", image=image_Four)			
-	
-info = pygame.display.Info()
-
-# Get screen width and height
-screen_width = info.current_w
-screen_height = info.current_h
-
-# Calculate the center of the screen
-center_x = screen_width // 2
-center_y = screen_height // 2
-
-board = Board(player_positions)
-
+root = Tk()
+board = Board(root)	
 def play():
-		pygame.init()
-		root.mainloop()
+	root.title("Board")
+	root.winfo_toplevel().positionfrom("user")
+	root.mainloop()	
 
-#play()
+play()

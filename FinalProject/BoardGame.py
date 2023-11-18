@@ -1,6 +1,6 @@
 import pygame
 import sys
-from Board import *
+from Board import play
 
 pygame.init()
 screen = pygame.display.set_mode((800, 800))

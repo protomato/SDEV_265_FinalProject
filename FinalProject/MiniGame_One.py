@@ -72,13 +72,13 @@ class MiniGame_One:
 				break
 
 			keys = pygame.key.get_pressed()
-			if keys[pygame.K_LEFT]:
+			if keys[pygame.K_LEFT] or keys[pygame.K_a]:
 				self.spaceship_x -= 1
-			if keys[pygame.K_RIGHT]:
+			if keys[pygame.K_RIGHT] or  keys[pygame.K_d]:
 				self.spaceship_x += 1
-			if keys[pygame.K_UP]:
+			if keys[pygame.K_UP ] or  keys[pygame.K_w]:
 				self.spaceship_y -= 1
-			if keys[pygame.K_DOWN]:
+			if keys[pygame.K_DOWN] or  keys[pygame.K_s]:
 				self.spaceship_y += 1
 
 			self.screen.blit(self.spaceship, (self.spaceship_x, self.spaceship_y))
