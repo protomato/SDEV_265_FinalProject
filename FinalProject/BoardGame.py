@@ -100,7 +100,8 @@ def main_menu():
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if PLAY_BUTTON.checkForInput():
-						pygame.quit()
+						#options()
+						#pygame.quit()
 						play()
 						return
 					if OPTIONS_BUTTON.checkForInput():
