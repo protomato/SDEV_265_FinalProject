@@ -32,7 +32,7 @@ class InputText:
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_RETURN:  # Check for Enter key
 						#self.text_lines.append(self.user_text)
-						input_text = text.getInput()  # Retrieve the text input
+						input_text = self.getInput()  # Retrieve the text input
 						print(input_text)
 						pygame.quit()
 						return
@@ -72,5 +72,4 @@ class InputText:
 			pygame.display.flip()
 			self.clock.tick(60)
 
-text = InputText()
-text.runInputBox()
+
